@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNIST Digit Predictor</title>
+    <link rel="stylesheet" href="../static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Upload a Digit Image</h1>
+        <input type="file" id="fileInput" accept="image/*">
+        <button onclick="uploadImage()">Predict</button>
+        <p id="predictionResult"></p>
+        <img id="preview" src="" alt="Image Preview" style="display:none;">
+    </div>
+
+    <script>
+        function uploadImage() {
+            let fileInput = document.getElementById("fileInput");
+            let file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please select an image.");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("file", file);
+
+            // Show image preview
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let preview = document.getElementById("preview");
+                preview.src = e.target.result;
+                preview.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+
+            // Send the image to the Flask API
+            fetch("http://127.0.0.1:5000/predict", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("predictionResult").innerText = "Predicted Digit: " + data.prediction;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Error making prediction. Please try again.");
+            });
+        }
+    </script>
+</body>
+</html>
